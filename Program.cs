@@ -66,16 +66,37 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+// Enable Swagger in all environments (including Production for demo)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ClusterConnect API v1");
+    c.RoutePrefix = "swagger"; // Access via /swagger
+});
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Health check endpoint
+app.MapGet("/", () => new
+{
+    status = "healthy",
+    service = "ClusterConnect API",
+    version = "1.0.0",
+    endpoints = new[]
+    {
+        "GET /api/projects",
+        "GET /api/projects/{id}",
+        "GET /api/projects/status/{status}",
+        "POST /api/projects",
+        "PUT /api/projects/{id}",
+        "DELETE /api/projects/{id}",
+        "GET /swagger - API Documentation"
+    }
+});
+
 app.MapControllers();
 
 app.Run();
