@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: clusterconnect-api
+    env: docker
+    repo: https://github.com/MadhavDGS/ClusterConnect.NET
+    buildCommand: dotnet publish -c Release -o out
+    startCommand: dotnet out/ClusterConnect.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:8080
+      - key: Jwt__Key
+        generateValue: true
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: clusterconnect-db
+          property: connectionString
+
+databases:
+  - name: clusterconnect-db
+    databaseName: clusterconnect
+    user: clusteruser
