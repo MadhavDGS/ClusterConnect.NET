@@ -75,6 +75,7 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Enable static file serving (wwwroot)
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();

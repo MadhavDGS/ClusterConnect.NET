@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClusterConnect - Student Collaboration Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .projects {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .projects h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .project-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .project-card {
+            border: 2px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .project-title {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .project-desc {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-status {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-tech {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .api-links {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .api-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .api-links a:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .add-project {
+            margin-top: 20px;
+            padding: 15px 40px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-project:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-graduation-cap"></i> ClusterConnect</h1>
+            <p>Student Collaboration & Project Management Platform</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="total-projects">0</h3>
+                <p>Total Projects</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="active-projects">0</h3>
+                <p>Active Projects</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="completed-projects">0</h3>
+                <p>Completed</p>
+            </div>
+        </div>
+
+        <div class="projects">
+            <h2><i class="fas fa-folder-open"></i> Recent Projects</h2>
+            <div id="project-list" class="project-grid">
+                <div class="loading">Loading projects...</div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="add-project" onclick="addDemoProject()">+ Add Demo Project</button>
+            </div>
+        </div>
+
+        <div class="api-links">
+            <a href="/swagger" target="_blank"><i class="fas fa-book"></i> API Documentation</a>
+            <a href="https://github.com/MadhavDGS/ClusterConnect.NET" target="_blank"><i class="fab fa-github"></i>
+                GitHub</a>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function loadProjects() {
+            try {
+                const response = await fetch(`${API_BASE}/api/projects`);
+                const projects = await response.json();
+
+                displayProjects(projects);
+                updateStats(projects);
+            } catch (error) {
+                document.getElementById('project-list').innerHTML =
+                    '<div class="loading">No projects yet. Add one to get started!</div>';
+            }
+        }
+
+        function displayProjects(projects) {
+            const container = document.getElementById('project-list');
+
+            if (projects.length === 0) {
+                container.innerHTML = '<div class="loading">No projects yet. Add one to get started!</div>';
+                return;
+            }
+
+            container.innerHTML = projects.map(project => `
+                <div class="project-card">
+                    <div class="project-title">${project.title}</div>
+                    <div class="project-desc">${project.description || 'No description'}</div>
+                    <div class="project-meta">
+                        <span class="badge badge-status">${project.status}</span>
+                        ${project.techStack ? `<span class="badge badge-tech">${project.techStack}</span>` : ''}
+                        ${project.teamSize ? `<span class="badge"><i class="fas fa-users"></i> ${project.teamSize} members</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats(projects) {
+            document.getElementById('total-projects').textContent = projects.length;
+            document.getElementById('active-projects').textContent =
+                projects.filter(p => p.status === 'ACTIVE').length;
+            document.getElementById('completed-projects').textContent =
+                projects.filter(p => p.status === 'COMPLETED').length;
+        }
+
+        async function addDemoProject() {
+            const demoProjects = [
+                {
+                    title: "AI Chatbot with RAG",
+                    description: "Building an AI-powered chatbot using LLMs and RAG pipeline",
+                    status: "ACTIVE",
+                    techStack: "Python, FastAPI, FAISS, Gemini",
+                    teamSize: 3,
+                    category: "AI/ML"
+                },
+                {
+                    title: "React Native Food App",
+                    description: "Mobile app for ordering food from local restaurants",
+                    status: "PLANNING",
+                    techStack: "React Native, Node.js, MongoDB",
+                    teamSize: 4,
+                    category: "Mobile"
+                },
+                {
+                    title: "IoT Smart Home System",
+                    description: "Home automation using ESP32 and sensor network",
+                    status: "ACTIVE",
+                    techStack: "ESP32, Arduino, MQTT, React",
+                    teamSize: 2,
+                    category: "IoT"
+                }
+            ];
+
+            const randomProject = demoProjects[Math.floor(Math.random() * demoProjects.length)];
+
+            try {
+                const response = await fetch(`${API_BASE}/api/projects`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(randomProject)
+                });
+
+                if (response.ok) {
+                    loadProjects();
+                }
+            } catch (error) {
+                alert('Failed to add project. Check API connection.');
+            }
+        }
+
+        // Load projects on page load
+        loadProjects();
+
+        // Refresh every 10 seconds
+        setInterval(loadProjects, 10000);
+    </script>
+</body>
+
+</html>
