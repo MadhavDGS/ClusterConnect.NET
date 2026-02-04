@@ -76,18 +76,20 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 app.UseStaticFiles(); // Enable static file serving (wwwroot)
+app.UseDefaultFiles(); // Serve index.html by default
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Health check endpoint
-app.MapGet("/", () => new
+app.MapGet("/health", () => new
 {
     status = "healthy",
     service = "ClusterConnect API",
     version = "1.0.0",
     endpoints = new[]
     {
+        "GET / - Frontend UI",
         "GET /api/projects",
         "GET /api/projects/{id}",
         "GET /api/projects/status/{status}",
