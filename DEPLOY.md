@@ -1,81 +1,75 @@
-# Quick Deployment Guide - Render
+# Deploy to Render - Complete Guide
 
-## Step 1: Prerequisites
-- GitHub account
-- Render account (free tier)
-- Code pushed to GitHub
+## Option 1: Using Render Dashboard (Easiest - 5 min)
 
-## Step 2: Deploy on Render
+1. **Go to render.com and login**
 
-1. Go to [render.com](https://render.com)
-2. Click "New +" → "Web Service"
-3. Connect your GitHub account
-4. Select `ClusterConnect.NET` repository
-5. Configure:
+2. **Create Web Service:**
+   - Click "New +" → "Web Service"
+   - Connect GitHub → Select `ClusterConnect.NET`
    - **Name:** `clusterconnect-api`
-   - **Environment:** `.NET`
-   - **Build Command:** `dotnet publish -c Release -o out`
-   - **Start Command:** `dotnet out/ClusterConnect.dll`
+   - **Environment:** Docker (it will detect render.yaml)
+   - Click "Create Web Service"
 
-## Step 3: Add PostgreSQL Database
+3. **Render will auto-detect `render.yaml` and:**
+   - Create PostgreSQL database
+   - Set environment variables
+   - Build and deploy your app
 
-1. In Render dashboard, click "New +" → "PostgreSQL"
-2. Name it `clusterconnect-db`
-3. Select Free tier
-4. Copy the **Internal Database URL**
+4. **Done!** Your API will be live at:
+   ```
+   https://clusterconnect-api.onrender.com
+   ```
 
-## Step 4: Set Environment Variables
+---
 
-In your web service → Environment:
+## Option 2: Using Render CLI (If you want)
 
-```
-ASPNETCORE_ENVIRONMENT=Production
-ASPNETCORE_URLS=http://+:8080
-ConnectionStrings__DefaultConnection=<paste-internal-database-url>
-Jwt__Key=YourProductionSecretKey12345678901234567890CHANGETHIS
-```
-
-## Step 5: Auto-run Migrations
-
-Add this to `Program.cs` before `app.Run()`:
-
-```csharp
-// Auto-migrate database on startup (Render deployment)
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
-}
-```
-
-## Step 6: Deploy!
-
-Click "Manual Deploy" → "Deploy latest commit"
-
-Render will:
-- Build your .NET app
-- Run migrations automatically
-- Deploy to live URL
-
-## Your Live URL
-
-```
-https://clusterconnect-api.onrender.com
-```
-
-Test it:
+### Step 1: Login
 ```bash
-curl https://clusterconnect-api.onrender.com/api/projects
+render login
 ```
+This opens browser for OAuth login.
 
-View Swagger docs:
-```
-https://clusterconnect-api.onrender.com/swagger
+### Step 2: The `render.yaml` is already in your repo
+It will auto-deploy when Render detects it.
+
+### Step 3: Manual deploy (if needed)
+```bash
+# List services
+render services list
+
+# Trigger deploy
+render deploys create --service clusterconnect-api
 ```
 
 ---
 
-**Total Time:** 5-10 minutes  
-**Cost:** $0 (Render free tier)
+## What's Deployed:
 
-**Note:** Free tier spins down after inactivity. First request may take 30s to wake up.
+✅ ASP.NET Core Web API  
+✅ PostgreSQL database (auto-created)  
+✅ Environment variables (auto-configured)  
+✅ Docker container  
+
+## Test Your API:
+
+```bash
+# Health check
+curl https://clusterconnect-api.onrender.com/api/projects
+
+# View Swagger docs
+open https://clusterconnect-api.onrender.com/swagger
+```
+
+---
+
+## For Your Resume/Application:
+
+**Live Demo:** https://clusterconnect-api.onrender.com  
+**GitHub:** https://github.com/MadhavDGS/ClusterConnect.NET  
+**Tech:** ASP.NET Core, C#, EF Core, PostgreSQL, Redis, Docker
+
+---
+
+**Recommendation:** Use Dashboard (Option 1) - it's faster and easier.

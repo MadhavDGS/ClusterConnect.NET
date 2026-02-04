@@ -18,13 +18,20 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Redis Configuration
+// Redis Configuration (Optional)
 var redisConnection = builder.Configuration.GetConnectionString("RedisConnection");
 if (!string.IsNullOrEmpty(redisConnection))
 {
-    builder.Services.AddSingleton<IConnectionMultiplexer>(
-        ConnectionMultiplexer.Connect(redisConnection));
-    builder.Services.AddScoped<ICacheService, RedisCacheService>();
+    try
+    {
+        builder.Services.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(redisConnection + ",abortConnect=false"));
+        builder.Services.AddScoped<ICacheService, RedisCacheService>();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Redis connection failed (will run without cache): {ex.Message}");
+    }
 }
 
 // JWT Authentication
